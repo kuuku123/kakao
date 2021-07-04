@@ -33,7 +33,7 @@ public class InitDb
         {
             String res = membershipService.getCurrentLocalDateTimeStamp();
             Membership membership1 = new Membership("spc", "test1", "happypoint", res, "Y", 120);
-            Membership membership2 = new Membership("sshinsegae", "test1", "shinsegaepoint", res, "Y", 3500);
+            Membership membership2 = new Membership("shinsegae", "test1", "shinsegaepoint", res, "Y", 3500);
             Membership membership3 = new Membership("cj", "test1", "cjone", res, "N", 1029);
 
             em.persist(membership1);

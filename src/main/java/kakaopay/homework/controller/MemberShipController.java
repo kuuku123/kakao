@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,21 +26,28 @@ public class MemberShipController
     private final MembershipService membershipService;
 
     @GetMapping("/api/v1/membership")
-    public Result getAllMembership(@RequestHeader("X-USER-ID") String userId)
+    public ResponseEntity getAllMembership(@RequestHeader("X-USER-ID") String userId)
     {
-        Optional<List<Membership>> all = membershipRepository.findAllByUserId(userId);
-        if (all.isEmpty())
+        try
         {
-            return new Result("true",null,null   );
+            Optional<List<Membership>> all = membershipRepository.findAllByUserId(userId);
+            if (all.isEmpty())
+            {
+                return new ResponseEntity(new Result("false",null,null), HttpStatus.valueOf(400));
+            }
+            else
+            {
+                return new ResponseEntity(new Result("true", all.get(), null), HttpStatus.valueOf(200));
+            }
         }
-        else
+        catch (Exception e)
         {
-            return new Result("true", all.get(), null);
+            return new ResponseEntity(new Result("false",null,null), HttpStatus.valueOf(400));
         }
     }
 
     @PostMapping("/api/v1/membership")
-    public Result enrollMembership(@RequestBody EnrollMembership enrollMembership,
+    public ResponseEntity enrollMembership(@RequestBody EnrollMembership enrollMembership,
                                    @RequestHeader("X-USER-ID") String userId)
     {
         try
@@ -46,54 +55,61 @@ public class MemberShipController
             String cur_time = membershipService.getCurrentLocalDateTimeStamp();
             Membership newMember = new Membership(enrollMembership.getMembershipId(), userId,enrollMembership.getMembershipName() , cur_time, "Y", enrollMembership.getPoint());
             membershipRepository.save(newMember);
-            return new Result("true", newMember,null);
+            return new ResponseEntity(new Result("true", newMember,null), HttpStatus.valueOf(200));
         }
         catch (Exception e)
         {
-            return new Result("false",null,new ApiError(400,"membershipid must be provided"));
+            return new ResponseEntity(new Result("false",null,new ApiError(400,"membershipid must be provided")), HttpStatus.valueOf(400));
         }
 
     }
 
     @DeleteMapping("/api/v1/membership/{membershipId}")
-    public Result deleteMembership(@PathVariable("membershipId") String membershipId, @RequestHeader("X-USER-ID") String userId)
+    public ResponseEntity deleteMembership(@PathVariable("membershipId") String membershipId, @RequestHeader("X-USER-ID") String userId)
     {
-        String done = membershipService.DeactivateMembership(membershipId, userId);
-        if (done.equals("failed"))
+        try
         {
-            return new Result("false",null,new ApiError(400,"no such membershipId exist in your userId"));
+            String done = membershipService.DeactivateMembership(membershipId, userId);
+            if (done.equals("failed"))
+            {
+                return new ResponseEntity(new Result("false",null,new ApiError(400,"no such membershipId exist in your userId")), HttpStatus.valueOf(400));
+            }
+            else
+            {
+                return new ResponseEntity(new Result("true",true,null),HttpStatus.valueOf(200));
+            }
         }
-        else
+        catch (Exception e)
         {
-            return new Result("true",true,null);
+            return new ResponseEntity(new Result("false",null,new ApiError(400,"no such membershipId exist in your userId")), HttpStatus.valueOf(400));
         }
     }
 
     @GetMapping("/api/v1/membership/{membershipId}")
-    public Result getSpecificMembership(@PathVariable("membershipId") String membershipId,@RequestHeader("X-USER-ID") String userId )
+    public ResponseEntity getSpecificMembership(@PathVariable("membershipId") String membershipId,@RequestHeader("X-USER-ID") String userId )
     {
         Optional<Membership> member = membershipRepository.findByMembershipIdAndUserId(membershipId, userId);
         if (member.isEmpty())
         {
-            return new Result("false",null,new ApiError(400,"no such membershipId exist in your userId"));
+            return new ResponseEntity(new Result("false",null,new ApiError(400,"no such membershipId exist in your userId")),HttpStatus.valueOf(400));
         }
         else
         {
-            return new Result("true", member.get(),null);
+            return new ResponseEntity(new Result("true", member.get(),null),HttpStatus.valueOf(200));
         }
     }
 
     @PutMapping("/api/v1/membership/point")
-    public Result addMembershipPoint(@RequestBody AccumulateMembership accumulateMembership, @RequestHeader("X-USER-ID") String userId)
+    public ResponseEntity addMembershipPoint(@RequestBody AccumulateMembership accumulateMembership, @RequestHeader("X-USER-ID") String userId)
     {
         String done = membershipService.addMembershipPoint(accumulateMembership.getMembershipId(), accumulateMembership.getAmount(), userId);
         if (done.equals("failed"))
         {
-            return new Result("false",null,new ApiError(400,"no such membershipId exist in your userId"));
+            return new ResponseEntity(new Result("false",null,new ApiError(400,"no such membershipId exist in your userId")),HttpStatus.valueOf(400));
         }
         else
         {
-            return new Result("true", true,null);
+            return new ResponseEntity(new Result("true", true,null),HttpStatus.valueOf(200));
         }
     }
 
