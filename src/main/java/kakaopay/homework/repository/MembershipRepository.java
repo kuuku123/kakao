@@ -11,5 +11,4 @@ public interface MembershipRepository extends JpaRepository<Membership,Long>
 {
     Optional<List<Membership>> findAllByUserId(String userId);
     Optional<Membership> findByMembershipIdAndUserId(String membershipId,String userId);
-    void deleteMembershipByMembershipIdAndUserId(String membershipId, String userId);
 }

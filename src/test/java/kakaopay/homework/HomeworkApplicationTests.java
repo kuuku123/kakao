@@ -33,18 +33,6 @@ class HomeworkApplicationTests {
     @MockBean
     MembershipService membershipService;
 
-    @BeforeEach
-    public void init()
-    {
-        String res = membershipService.getCurrentLocalDateTimeStamp();
-        Membership membership1 = new Membership("spc", "test1", "happypoint", res, "Y", 120);
-        Membership membership2 = new Membership("shinsegae", "test1", "shinsegaepoint", res, "Y", 3500);
-        Membership membership3 = new Membership("cj", "test1", "cjone", res, "N", 1029);
-
-        membershipRepository.save(membership1);
-        membershipRepository.save(membership2);
-        membershipRepository.save(membership3);
-    }
 
     @Test
     public void getAll() throws Exception

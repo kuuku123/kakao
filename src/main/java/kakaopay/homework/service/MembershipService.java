@@ -33,7 +33,8 @@ public class MembershipService
         }
         else
         {
-            membershipRepository.deleteMembershipByMembershipIdAndUserId(membershipId,userId);
+            Optional<Membership> member = membershipRepository.findByMembershipIdAndUserId(membershipId, userId);
+            member.get().setMembershipStatus("N");
             return "success";
         }
     }
